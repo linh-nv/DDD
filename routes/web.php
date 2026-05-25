@@ -16,3 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+use App\Http\Controllers\ExamTakeController;
+
+Route::get('/exam/{id}', [ExamTakeController::class, 'show'])->name('exam.show');
