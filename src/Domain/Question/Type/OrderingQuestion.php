@@ -39,7 +39,7 @@ class OrderingQuestion extends Question
             }
         }
 
-        return $correct ? new GradeResult(true, $this->score()) : new GradeResult(false, new Score(0));
+        return $correct ? new GradeResult(true, $this->score()) : GradeResult::incorrect();
     }
 
     public function correctOrder(): array

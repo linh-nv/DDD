@@ -9,5 +9,5 @@ interface ExamRepository
     /**
      * @throws ExamNotFoundException
      */
-    public function findById(int $id): Exam;
+    public function findById(ExamID $id): Exam;
 }

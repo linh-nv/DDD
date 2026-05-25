@@ -2,11 +2,12 @@
 
 namespace Testcenter\Domain\Question;
 
+use Testcenter\Domain\Shared\AggregateRoot;
 use Testcenter\Domain\Shared\Score;
 use Testcenter\Domain\Submission\Answer\Answer;
 use Testcenter\Domain\Submission\GradeResult;
 
-abstract class Question
+abstract class Question extends AggregateRoot
 {
     public function __construct(
         protected readonly QuestionID $id,

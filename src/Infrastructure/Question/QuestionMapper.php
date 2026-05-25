@@ -3,6 +3,9 @@
 namespace Testcenter\Infrastructure\Question;
 
 use Testcenter\Domain\Question\AcceptedAnswers;
+use Testcenter\Domain\Question\Category\Categories;
+use Testcenter\Domain\Question\Category\CategoryMap;
+use Testcenter\Domain\Question\Exception\UnsupportedQuestionTypeException;
 use Testcenter\Domain\Question\OptionCollection;
 use Testcenter\Domain\Question\Pair\MatchingPair;
 use Testcenter\Domain\Question\Pair\MatchingPairs;
@@ -10,6 +13,7 @@ use Testcenter\Domain\Question\Question;
 use Testcenter\Domain\Question\QuestionID;
 use Testcenter\Domain\Question\QuestionText;
 use Testcenter\Domain\Question\QuestionType;
+use Testcenter\Domain\Question\Type\CategoryQuestion;
 use Testcenter\Domain\Question\Type\FillBlankQuestion;
 use Testcenter\Domain\Question\Type\MatchingQuestion;
 use Testcenter\Domain\Question\Type\MultipleChoiceQuestion;
@@ -67,8 +71,22 @@ class QuestionMapper
                 score: new Score($questionEloquent->score),
                 correctOrder: $questionEloquent->payload['correct_order'],
             ),
-            default => throw new \Exception('Unsupported question type: ' . $questionEloquent->type),
+            QuestionType::CATEGORY =>
+            $this->buildCategoryQuestion($questionEloquent),
+            default => throw new UnsupportedQuestionTypeException('Unsupported question type: ' . $questionEloquent->type),
         };
+    }
+
+    private function buildCategoryQuestion(\App\Models\Question $q): CategoryQuestion
+    {
+        $categories = new Categories($q->payload['categories']);
+        return new CategoryQuestion(
+            id: new QuestionID($q->id),
+            text: new QuestionText($q->content),
+            score: new Score($q->score),
+            categories: $categories,
+            correctMap: new CategoryMap($q->payload['correct_map'], $categories),
+        );
     }
 
     private function getPairs(array $pairs): array

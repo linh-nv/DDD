@@ -4,16 +4,18 @@ namespace Testcenter\Application\Submission\UseCase;
 
 use Testcenter\Application\Submission\SubmissionResponse;
 use Testcenter\Domain\AppException;
+use Testcenter\Domain\Exam\ExamID;
 use Testcenter\Domain\Exam\ExamRepository;
+use Testcenter\Domain\Question\Exception\QuestionNotFoundException;
 use Testcenter\Domain\Question\Question;
 use Testcenter\Domain\Question\QuestionCollection;
 use Testcenter\Domain\Question\QuestionID;
 use Testcenter\Domain\Question\QuestionRepository;
 use Testcenter\Domain\Shared\DomainEventPublisher;
-use Testcenter\Domain\Submission\Exception\SubmissionException;
 use Testcenter\Domain\Submission\Service\ScoringService;
 use Testcenter\Domain\Submission\Submission;
 use Testcenter\Domain\Submission\SubmissionRepository;
+use Testcenter\Domain\User\UserID;
 
 class SubmitExamHandler
 {
@@ -31,12 +33,13 @@ class SubmitExamHandler
      */
     public function handle(SubmitExamCommand $command): SubmissionResponse
     {
-        $exam = $this->examRepository->findById($command->examId);
-        $questions = $this->questionRepository->findQuestionsForExam(array_keys($command->answers));
+        $exam = $this->examRepository->findById(new ExamID($command->examId));
+        $questionIds = array_map(fn($id) => new QuestionID($id), array_keys($command->answers));
+        $questions = $this->questionRepository->findQuestionsForExam($questionIds);
         $answers = $this->makeAnswers($questions, $command->answers);
 
         $submission = Submission::submit(
-            userId: $command->userId,
+            userId: new UserID($command->userId),
             exam: $exam,
             answers: $answers,
         );
@@ -53,7 +56,7 @@ class SubmitExamHandler
     }
 
     /**
-     * @throws SubmissionException
+     * @throws QuestionNotFoundException
      */
     private function makeAnswers(QuestionCollection $questions, array $userAnswers): array
     {
@@ -62,7 +65,7 @@ class SubmitExamHandler
             /** @var Question $question */
             $question = $questions->findById(new QuestionID($questionId));
             if (!$question) {
-                throw new SubmissionException("Question with ID $questionId not found");
+                throw new QuestionNotFoundException("Question with ID $questionId not found");
             }
 
             $result[$questionId] = $question->createAnswer($userAnswer);

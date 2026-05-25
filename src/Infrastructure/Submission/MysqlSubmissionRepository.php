@@ -11,6 +11,10 @@ class MysqlSubmissionRepository implements SubmissionRepository
 {
     public function save(Submission $submission): void
     {
+        if (!$submission->isScored()) {
+            throw new \LogicException('Cannot persist an unscored submission');
+        }
+
         DB::transaction(function () use ($submission) {
             $scoreResult = $submission->getScoreResult();
             $submissionModel = \App\Models\Submission::query()

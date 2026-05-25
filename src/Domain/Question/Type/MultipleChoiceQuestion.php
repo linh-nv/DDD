@@ -36,7 +36,7 @@ class MultipleChoiceQuestion extends Question
 
         return $this->normalize($answer->value()) === $this->normalize($this->correct)
             ? new GradeResult(true, $this->score())
-            : new GradeResult(false, new Score(0));
+            : GradeResult::incorrect();
     }
 
     public function options(): OptionCollection

@@ -2,6 +2,9 @@
 
 namespace Testcenter\Domain\Exam;
 
+use Testcenter\Domain\Exam\Event\ExamDescriptionUpdated;
+use Testcenter\Domain\Exam\Event\ExamPublished;
+use Testcenter\Domain\Exam\Event\ExamRenamed;
 use Testcenter\Domain\Exam\Exception\ExamCannotPublishException;
 use Testcenter\Domain\Shared\AggregateRoot;
 
@@ -32,6 +35,7 @@ class Exam extends AggregateRoot
         }
 
         $this->title = $newTitle;
+        $this->recordEvent(new ExamRenamed($this->id, $newTitle));
     }
 
     public function getDescription(): Description
@@ -42,6 +46,7 @@ class Exam extends AggregateRoot
     public function updateDescription(Description $description): void
     {
         $this->description = $description;
+        $this->recordEvent(new ExamDescriptionUpdated($this->id, $description));
     }
 
     public function isActive(): bool
@@ -61,5 +66,6 @@ class Exam extends AggregateRoot
         }
 
         $this->examStatus = ExamStatus::ACTIVE;
+        $this->recordEvent(new ExamPublished($this->id));
     }
 }

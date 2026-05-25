@@ -12,6 +12,11 @@ class GradeResult
     ) {
     }
 
+    public static function incorrect(): self
+    {
+        return new self(false, new Score(0));
+    }
+
     public function isCorrect(): bool
     {
         return $this->correct;

@@ -30,7 +30,7 @@ class TrueFalseQuestion extends Question
 
         return $answer->value() === $this->correct
             ? new GradeResult(true, $this->score())
-            : new GradeResult(false, new Score(0));
+            : GradeResult::incorrect();
     }
 
     public function createAnswer(mixed $userAnswer): Answer

@@ -10,4 +10,5 @@ enum QuestionType: string
     case FILL_BLANK = 'fill_blank';
     case MATCHING = 'matching';
     case ORDERING = 'ordering';
+    case CATEGORY = 'category';
 }

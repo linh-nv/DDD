@@ -40,7 +40,7 @@ class Submission extends AggregateRoot
      * @throws ExamNotActiveException
      */
     public static function submit(
-        int $userId,
+        UserID $userId,
         Exam $exam,
         array $answers
     ): self {
@@ -49,7 +49,7 @@ class Submission extends AggregateRoot
         }
 
         $submission = new self(
-            userId: new UserID($userId),
+            userId: $userId,
             examId: $exam->id(),
             answers: new AnswerCollection($answers)
         );
@@ -62,6 +62,11 @@ class Submission extends AggregateRoot
     public function applyScore(ScoreResult $scoreResult): void
     {
         $this->scoreResult = $scoreResult;
+    }
+
+    public function isScored(): bool
+    {
+        return $this->scoreResult !== null;
     }
 
     public function getScoreResult(): ScoreResult

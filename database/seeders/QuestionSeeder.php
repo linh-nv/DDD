@@ -108,6 +108,86 @@ class QuestionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 5,
+                'type' => 'multiple_choice',
+                'content' => 'Chọn các framework PHP phổ biến.',
+
+                'option_a' => 'Laravel',
+                'option_b' => 'Symfony',
+                'option_c' => 'Django',
+                'option_d' => 'CodeIgniter',
+
+                'correct_answer' => null,
+
+                'payload' => json_encode([
+                    'options' => [
+                        'A' => 'Laravel',
+                        'B' => 'Symfony',
+                        'C' => 'Django',
+                        'D' => 'CodeIgniter',
+                    ],
+                    'correct' => ['A', 'B', 'D'],
+                ]),
+
+                'score' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 6,
+                'type' => 'ordering',
+                'content' => 'Sắp xếp các bước xử lý HTTP request trong Laravel theo đúng thứ tự.',
+
+                'option_a' => null,
+                'option_b' => null,
+                'option_c' => null,
+                'option_d' => null,
+
+                'correct_answer' => null,
+
+                'payload' => json_encode([
+                    'correct_order' => [
+                        'Request',
+                        'Kernel',
+                        'Middleware',
+                        'Router',
+                        'Controller',
+                        'Response',
+                    ],
+                ]),
+
+                'score' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 7,
+                'type' => 'category',
+                'content' => 'Phân loại các công nghệ sau theo tầng kiến trúc.',
+
+                'option_a' => null,
+                'option_b' => null,
+                'option_c' => null,
+                'option_d' => null,
+
+                'correct_answer' => null,
+
+                'payload' => json_encode([
+                    'categories' => ['Frontend', 'Backend', 'Database'],
+                    'correct_map' => [
+                        'Vue'     => 'Frontend',
+                        'React'   => 'Frontend',
+                        'Laravel' => 'Backend',
+                        'MySQL'   => 'Database',
+                        'Redis'   => 'Database',
+                    ],
+                ]),
+
+                'score' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

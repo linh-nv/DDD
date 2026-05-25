@@ -1,0 +1,142 @@
+### Base URL
+@base = http://localhost:8000/api
+
+# =============================================================
+# SUBMIT EXAM — MVP version  (POST /api/exams/submit)
+# =============================================================
+
+### Submit all question types (MVP)
+POST {{base}}/exams/submit
+Content-Type: application/json
+
+{
+    "exam_id": 1,
+    "answers": {
+        "1": false,
+        "2": "B",
+        "3": "laravel",
+        "4": {
+            "PHP": "Backend",
+            "Vue": "Frontend",
+            "Redis": "Cache"
+        },
+        "5": ["A", "B", "D"],
+        "6": ["Request", "Kernel", "Middleware", "Router", "Controller", "Response"],
+        "7": {
+            "Vue": "Frontend",
+            "React": "Frontend",
+            "Laravel": "Backend",
+            "MySQL": "Database",
+            "Redis": "Database"
+        }
+    }
+}
+
+###
+
+### Submit — partial answers (some wrong)
+POST {{base}}/exams/submit
+Content-Type: application/json
+
+{
+    "exam_id": 1,
+    "answers": {
+        "1": true,
+        "2": "A",
+        "3": "symfony",
+        "4": {
+            "PHP": "Frontend",
+            "Vue": "Backend",
+            "Redis": "Cache"
+        },
+        "5": ["A", "C"],
+        "6": ["Kernel", "Request", "Middleware", "Router", "Controller", "Response"],
+        "7": {
+            "Vue": "Backend",
+            "React": "Frontend",
+            "Laravel": "Backend",
+            "MySQL": "Frontend",
+            "Redis": "Database"
+        }
+    }
+}
+
+###
+
+# =============================================================
+# SUBMIT EXAM — DDD version  (POST /api/exams/submit-ddd)
+# =============================================================
+
+### Submit all question types (DDD)
+POST {{base}}/exams/submit-ddd
+Content-Type: application/json
+
+{
+    "exam_id": 1,
+    "answers": {
+        "1": false,
+        "2": "B",
+        "3": "laravel",
+        "4": {
+            "PHP": "Backend",
+            "Vue": "Frontend",
+            "Redis": "Cache"
+        },
+        "5": ["A", "B", "D"],
+        "6": ["Request", "Kernel", "Middleware", "Router", "Controller", "Response"],
+        "7": {
+            "Vue": "Frontend",
+            "React": "Frontend",
+            "Laravel": "Backend",
+            "MySQL": "Database",
+            "Redis": "Database"
+        }
+    }
+}
+
+###
+
+### Submit — partial answers (some wrong)
+POST {{base}}/exams/submit-ddd
+Content-Type: application/json
+
+{
+    "exam_id": 1,
+    "answers": {
+        "1": true,
+        "2": "A",
+        "3": "symfony",
+        "4": {
+            "PHP": "Frontend",
+            "Vue": "Backend",
+            "Redis": "Cache"
+        },
+        "5": ["A", "C"],
+        "6": ["Kernel", "Request", "Middleware", "Router", "Controller", "Response"],
+        "7": {
+            "Vue": "Backend",
+            "React": "Frontend",
+            "Laravel": "Backend",
+            "MySQL": "Frontend",
+            "Redis": "Database"
+        }
+    }
+}
+
+###
+
+# =============================================================
+# ANSWER KEY — per question
+# =============================================================
+# Q1  true_false       correct: false      score: 1
+# Q2  single_choice    correct: "B"        score: 1
+# Q3  fill_blank       correct: "laravel"  score: 2   (case-insensitive)
+# Q4  matching         pairs: PHP→Backend, Vue→Frontend, Redis→Cache
+#                                          score: 3   (partial ≥50%)
+# Q5  multiple_choice  correct: [A,B,D]    score: 2   (all-or-nothing)
+# Q6  ordering         correct: Request→Kernel→Middleware→Router→Controller→Response
+#                                          score: 3   (all-or-nothing)
+# Q7  category         Frontend: Vue,React  Backend: Laravel  Database: MySQL,Redis
+#                                          score: 3   (partial ≥50%)
+#
+# Max total score: 15

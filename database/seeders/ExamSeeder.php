@@ -59,6 +59,30 @@ class ExamSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+
+            [
+                'exam_id' => 1,
+                'question_id' => 5,
+                'sort_order' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            [
+                'exam_id' => 1,
+                'question_id' => 6,
+                'sort_order' => 6,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+
+            [
+                'exam_id' => 1,
+                'question_id' => 7,
+                'sort_order' => 7,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

@@ -32,7 +32,7 @@ class SingleChoiceQuestion extends Question
 
         return $answer->value() === $this->correct
             ? new GradeResult(true, $this->score())
-            : new GradeResult(false, new Score(0));
+            : GradeResult::incorrect();
     }
 
     public function options(): OptionCollection

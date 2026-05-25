@@ -33,7 +33,7 @@ class FillBlankQuestion extends Question
             return new GradeResult(true, $this->score());
         }
 
-        return new GradeResult(false, new Score(0));
+        return GradeResult::incorrect();
     }
 
     public function createAnswer(mixed $userAnswer): Answer

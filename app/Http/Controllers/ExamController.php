@@ -82,6 +82,33 @@ class ExamController
                 }
 
                 // =====================================
+                // MULTIPLE CHOICE
+                // =====================================
+                if ($question->type === 'multiple_choice') {
+                    $normalize = fn(array $a) => array_values(array_unique(array_map('strval', $a)));
+                    $correct = $normalize($question->payload['correct'] ?? []);
+                    $submitted = $normalize((array)$answer);
+                    sort($correct);
+                    sort($submitted);
+
+                    if ($correct === $submitted) {
+                        $totalScore += $question->score;
+                    }
+                }
+
+                // =====================================
+                // ORDERING
+                // =====================================
+                if ($question->type === 'ordering') {
+                    $correctOrder = array_values($question->payload['correct_order'] ?? []);
+                    $submittedOrder = array_values((array)$answer);
+
+                    if ($correctOrder === $submittedOrder) {
+                        $totalScore += $question->score;
+                    }
+                }
+
+                // =====================================
                 // MATCHING
                 // =====================================
                 if ($question->type === 'matching') {
@@ -106,6 +133,31 @@ class ExamController
                                 $correctCount / $totalPairs
                             ) * $question->score;
 
+                        $totalScore += floor($partialScore);
+                    }
+                }
+
+                // =====================================
+                // CATEGORY
+                // =====================================
+                if ($question->type === 'category') {
+                    $correctMap = $question->payload['correct_map'] ?? [];
+
+                    $correctCount = 0;
+
+                    foreach ((array)$answer as $item => $category) {
+                        if (
+                            isset($correctMap[$item]) &&
+                            $correctMap[$item] === $category
+                        ) {
+                            $correctCount++;
+                        }
+                    }
+
+                    $total = count($correctMap);
+
+                    if ($total > 0) {
+                        $partialScore = ($correctCount / $total) * $question->score;
                         $totalScore += floor($partialScore);
                     }
                 }
