@@ -10,7 +10,11 @@ use App\Http\Controllers\Admin\AdminExamController;
 use App\Http\Controllers\Admin\AdminQuestionController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $exams = \App\Models\Exam::where('is_active', true)
+        ->withCount('questions')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    return view('welcome', compact('exams'));
 });
 
 // Guest-only auth routes
