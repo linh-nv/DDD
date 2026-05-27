@@ -3,8 +3,10 @@
 namespace Testcenter\Domain\Exam;
 
 use Testcenter\Domain\Exam\Event\ExamDescriptionUpdated;
+use Testcenter\Domain\Exam\Event\ExamDurationUpdated;
 use Testcenter\Domain\Exam\Event\ExamPublished;
 use Testcenter\Domain\Exam\Event\ExamRenamed;
+use Testcenter\Domain\Exam\Event\ExamUnpublished;
 use Testcenter\Domain\Exam\Exception\ExamCannotPublishException;
 use Testcenter\Domain\Shared\AggregateRoot;
 
@@ -15,6 +17,7 @@ class Exam extends AggregateRoot
         private ExamStatus $examStatus,
         private Title $title,
         private Description $description,
+        private DurationMinutes $durationMinutes,
     ) {
     }
 
@@ -28,19 +31,28 @@ class Exam extends AggregateRoot
         return $this->title;
     }
 
+    public function getDescription(): Description
+    {
+        return $this->description;
+    }
+
+    public function getDurationMinutes(): DurationMinutes
+    {
+        return $this->durationMinutes;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->examStatus === ExamStatus::ACTIVE;
+    }
+
     public function rename(Title $newTitle): void
     {
         if ($this->title->value() === $newTitle->value()) {
             return;
         }
-
         $this->title = $newTitle;
         $this->recordEvent(new ExamRenamed($this->id, $newTitle));
-    }
-
-    public function getDescription(): Description
-    {
-        return $this->description;
     }
 
     public function updateDescription(Description $description): void
@@ -49,9 +61,13 @@ class Exam extends AggregateRoot
         $this->recordEvent(new ExamDescriptionUpdated($this->id, $description));
     }
 
-    public function isActive(): bool
+    public function updateDuration(DurationMinutes $durationMinutes): void
     {
-        return $this->examStatus === ExamStatus::ACTIVE;
+        if ($this->durationMinutes->value() === $durationMinutes->value()) {
+            return;
+        }
+        $this->durationMinutes = $durationMinutes;
+        $this->recordEvent(new ExamDurationUpdated($this->id, $durationMinutes));
     }
 
     /**
@@ -60,12 +76,18 @@ class Exam extends AggregateRoot
     public function publish(): void
     {
         if ($this->examStatus === ExamStatus::ACTIVE) {
-            throw new ExamCannotPublishException(
-                'Exam is already published'
-            );
+            throw new ExamCannotPublishException('Exam is already published');
         }
-
         $this->examStatus = ExamStatus::ACTIVE;
         $this->recordEvent(new ExamPublished($this->id));
+    }
+
+    public function unpublish(): void
+    {
+        if ($this->examStatus === ExamStatus::INACTIVE) {
+            return;
+        }
+        $this->examStatus = ExamStatus::INACTIVE;
+        $this->recordEvent(new ExamUnpublished($this->id));
     }
 }

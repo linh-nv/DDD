@@ -37,4 +37,12 @@ class TrueFalseQuestion extends Question
     {
         return new TrueFalseAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        return [
+            'correct'  => $this->correct,
+            '_summary' => $this->correct ? 'true' : 'false',
+        ];
+    }
 }

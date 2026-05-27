@@ -40,4 +40,13 @@ class FillBlankQuestion extends Question
     {
         return new FillBlankAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        $answers = $this->acceptedAnswers->all();
+        return [
+            'answers'  => $answers,
+            '_summary' => implode(' / ', $answers),
+        ];
+    }
 }

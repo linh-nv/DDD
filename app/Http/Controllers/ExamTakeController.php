@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use Illuminate\Http\Request;
+use Testcenter\Infrastructure\Shared\UuidBinary;
 
 class ExamTakeController extends Controller
 {
-    public function show(int $id)
+    public function show(string $id)
     {
-        $exam = Exam::with('questions')->findOrFail($id);
+        $exam = Exam::with('questions')
+            ->where('uuid', UuidBinary::toBin($id))
+            ->firstOrFail();
 
         $questions = $exam->questions->map(function ($question) {
             $payload = $question->payload ?? [];

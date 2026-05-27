@@ -15,13 +15,16 @@ use Testcenter\Domain\Exam\Title;
 
 class ExamTest extends TestCase
 {
+    private const EXAM_ID = 'b0000000-0000-0000-0000-000000000001';
+
     private function makeInactiveExam(): Exam
     {
         return new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::INACTIVE,
             title: new Title('PHP Basics'),
             description: new Description('Introduction to PHP'),
+            durationMinutes: new \Testcenter\Domain\Exam\DurationMinutes(60),
         );
     }
 
@@ -43,16 +46,17 @@ class ExamTest extends TestCase
 
         $this->assertCount(1, $events);
         $this->assertInstanceOf(ExamPublished::class, $events[0]);
-        $this->assertEquals(1, $events[0]->examId()->value());
+        $this->assertEquals(self::EXAM_ID, $events[0]->examId()->value());
     }
 
     public function test_publish_throws_when_already_active(): void
     {
         $exam = new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::ACTIVE,
             title: new Title('PHP Basics'),
             description: new Description('Introduction to PHP'),
+            durationMinutes: new \Testcenter\Domain\Exam\DurationMinutes(60),
         );
 
         $this->expectException(ExamCannotPublishException::class);

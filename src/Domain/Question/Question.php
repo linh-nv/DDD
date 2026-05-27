@@ -32,6 +32,11 @@ abstract class Question extends AggregateRoot
         return $this->text;
     }
 
+    public function text(): QuestionText
+    {
+        return $this->text;
+    }
+
     public function updateText(QuestionText $text): void
     {
         $this->text = $text;
@@ -49,4 +54,5 @@ abstract class Question extends AggregateRoot
 
     abstract public function grade(Answer $answer): GradeResult;
     abstract public function createAnswer(mixed $userAnswer): Answer;
+    abstract public function toPayload(): array;
 }

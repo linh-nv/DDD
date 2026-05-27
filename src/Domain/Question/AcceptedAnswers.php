@@ -9,6 +9,11 @@ class AcceptedAnswers
     ) {
     }
 
+    public function all(): array
+    {
+        return $this->answers;
+    }
+
     public function contains(string $answer): bool
     {
         foreach ($this->answers as $accepted) {

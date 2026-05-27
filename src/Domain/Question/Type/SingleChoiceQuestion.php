@@ -44,4 +44,13 @@ class SingleChoiceQuestion extends Question
     {
         return new SingleChoiceAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        return [
+            'options' => $this->options->options,
+            'correct' => $this->correct,
+            '_summary' => $this->correct,
+        ];
+    }
 }

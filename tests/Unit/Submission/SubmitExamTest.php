@@ -5,6 +5,7 @@ namespace Tests\Unit\Submission;
 use PHPUnit\Framework\TestCase;
 use Testcenter\Domain\Exam\Description;
 use Testcenter\Domain\Exam\Exam;
+use Testcenter\Domain\Exam\DurationMinutes;
 use Testcenter\Domain\Exam\ExamID;
 use Testcenter\Domain\Exam\ExamStatus;
 use Testcenter\Domain\Exam\Exception\ExamNotActiveException;
@@ -24,37 +25,42 @@ use Testcenter\Domain\User\UserID;
 
 class SubmitExamTest extends TestCase
 {
+    private const EXAM_ID = 'b0000000-0000-0000-0000-000000000001';
+    private const Q1_ID   = 'a0000000-0000-0000-0000-000000000001';
+
     private function makeActiveExam(): Exam
     {
         return new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::ACTIVE,
             title: new Title('PHP Fundamentals'),
             description: new Description('Test your PHP knowledge'),
+            durationMinutes: new DurationMinutes(60),
         );
     }
 
     private function makeInactiveExam(): Exam
     {
         return new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::INACTIVE,
             title: new Title('PHP Fundamentals'),
             description: new Description('Test your PHP knowledge'),
+            durationMinutes: new DurationMinutes(60),
         );
     }
 
     private function makeAnswers(): array
     {
         $question = new SingleChoiceQuestion(
-            id: new QuestionID(1),
+            id: new QuestionID(self::Q1_ID),
             text: new QuestionText('What does PHP stand for?'),
             score: new Score(10),
             options: new OptionCollection(['A' => 'PHP: Hypertext Preprocessor', 'B' => 'Personal Home Page']),
             correct: 'A',
         );
 
-        return [1 => $question->createAnswer('A')];
+        return [self::Q1_ID => $question->createAnswer('A')];
     }
 
     public function test_submit_creates_submission_for_active_exam(): void
@@ -67,7 +73,22 @@ class SubmitExamTest extends TestCase
 
         $this->assertInstanceOf(Submission::class, $submission);
         $this->assertEquals(42, $submission->getUserId()->value());
-        $this->assertEquals(1, $submission->getExamId()->value());
+        $this->assertEquals(self::EXAM_ID, $submission->getExamId()->value());
+    }
+
+    public function test_submit_assigns_a_uuid_id(): void
+    {
+        $submission = Submission::submit(
+            userId: new UserID(42),
+            exam: $this->makeActiveExam(),
+            answers: $this->makeAnswers(),
+        );
+
+        $this->assertNotEmpty($submission->id()->value());
+        $this->assertMatchesRegularExpression(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/',
+            $submission->id()->value()
+        );
     }
 
     public function test_submit_throws_when_exam_is_inactive(): void
@@ -128,7 +149,7 @@ class SubmitExamTest extends TestCase
         );
 
         $submission->applyScore(new ScoreResult(10, [
-            1 => new GradeResult(true, new Score(10)),
+            self::Q1_ID => new GradeResult(true, new Score(10)),
         ]));
 
         $this->assertTrue($submission->isScored());
@@ -143,7 +164,7 @@ class SubmitExamTest extends TestCase
         );
 
         $scoreResult = new ScoreResult(10, [
-            1 => new GradeResult(true, new Score(10)),
+            self::Q1_ID => new GradeResult(true, new Score(10)),
         ]);
         $submission->applyScore($scoreResult);
 

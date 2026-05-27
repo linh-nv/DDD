@@ -6,6 +6,7 @@ use App\Models\SubmissionAnswer;
 use Illuminate\Support\Facades\DB;
 use Testcenter\Domain\Submission\Submission;
 use Testcenter\Domain\Submission\SubmissionRepository;
+use Testcenter\Infrastructure\Shared\UuidBinary;
 
 class MysqlSubmissionRepository implements SubmissionRepository
 {
@@ -17,25 +18,24 @@ class MysqlSubmissionRepository implements SubmissionRepository
 
         DB::transaction(function () use ($submission) {
             $scoreResult = $submission->getScoreResult();
-            $submissionModel = \App\Models\Submission::query()
-                ->create([
-                    'user_id' => $submission->getUserId()->value(),
-                    'exam_id' => $submission->getExamId()->value(),
-                    'score' => $scoreResult->total(),
-                    'status' => 'submitted',
-                    'submitted_at' => now(),
-                ]);
-            foreach ($submission->getAnswers()->all() as $questionId => $answer) {
-                SubmissionAnswer::query()
-                    ->create([
-                        'submission_id' => $submissionModel->id,
-                        'question_id' => $questionId,
-                        'answer' => $this->normalizeAnswer($answer->value()),
-                        'score' => $scoreResult->answerScores()[$questionId]->score()->value(),
-                    ]);
-            }
 
-            return $submission;
+            $submissionModel = \App\Models\Submission::query()->create([
+                'uuid'         => $submission->id()->value(),
+                'user_id'      => $submission->getUserId()->value(),
+                'exam_id'      => UuidBinary::toBin($submission->getExamId()->value()),
+                'score'        => $scoreResult->total(),
+                'status'       => 'submitted',
+                'submitted_at' => now(),
+            ]);
+
+            foreach ($submission->getAnswers()->all() as $questionId => $answer) {
+                SubmissionAnswer::query()->create([
+                    'submission_id' => $submissionModel->getKey(),
+                    'question_id'   => UuidBinary::toBin($questionId),
+                    'answer'        => $this->normalizeAnswer($answer->value()),
+                    'score'         => $scoreResult->answerScores()[$questionId]->score()->value(),
+                ]);
+            }
         });
     }
 

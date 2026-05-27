@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Testcenter\Application\Submission\UseCase\SubmitExamCommand;
 use Testcenter\Application\Submission\UseCase\SubmitExamHandler;
+use Testcenter\Infrastructure\Shared\UuidBinary;
 
 class ExamController
 {
@@ -26,7 +27,7 @@ class ExamController
     public function submit(Request $request)
     {
         $request->validate([
-            'exam_id' => ['required', 'integer'],
+            'exam_id' => ['required', 'string'],
             'answers' => ['required', 'array'],
         ]);
 
@@ -35,10 +36,8 @@ class ExamController
 
         $userId = Auth::id();
 
-        $questions = Question::whereIn(
-            'id',
-            array_keys($answers)
-        )->get();
+        $binIds = array_map(fn($id) => UuidBinary::toBin($id), array_keys($answers));
+        $questions = Question::whereIn('uuid', $binIds)->get();
 
         $totalScore = 0;
 
@@ -46,7 +45,7 @@ class ExamController
 
         try {
             foreach ($questions as $question) {
-                $answer = $answers[$question->id] ?? null;
+                $answer = $answers[$question->uuid_str] ?? null;
 
                 // =====================================
                 // TRUE FALSE
@@ -168,7 +167,7 @@ class ExamController
             // =====================================
 
             $submission = Submission::create([
-                'exam_id' => $examId,
+                'exam_id' => UuidBinary::toBin($examId),
                 'user_id' => $userId,
                 'score' => $totalScore,
                 'status' => 'submitted',
@@ -181,8 +180,8 @@ class ExamController
 
             foreach ($answers as $questionId => $answer) {
                 SubmissionAnswer::create([
-                    'submission_id' => $submission->id,
-                    'question_id' => $questionId,
+                    'submission_id' => $submission->getKey(),
+                    'question_id' => UuidBinary::toBin($questionId),
                     'answer' => json_encode($answer),
                     'score' => 0,
                 ]);
@@ -194,7 +193,7 @@ class ExamController
                 'success' => true,
                 'message' => 'Submit exam successfully',
                 'data' => [
-                    'submission_id' => $submission->id,
+                    'submission_id' => $submission->uuid_str,
                     'score' => $totalScore,
                 ],
             ]);
@@ -211,7 +210,7 @@ class ExamController
     public function submit_ddd(Request $request)
     {
         $request->validate([
-            'exam_id' => ['required', 'integer'],
+            'exam_id' => ['required', 'string'],
             'answers' => ['required', 'array'],
         ]);
 

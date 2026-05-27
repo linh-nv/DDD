@@ -7,6 +7,7 @@ use Testcenter\Application\Submission\UseCase\SubmitExamCommand;
 use Testcenter\Application\Submission\UseCase\SubmitExamHandler;
 use Testcenter\Domain\Exam\Description;
 use Testcenter\Domain\Exam\Exam;
+use Testcenter\Domain\Exam\DurationMinutes;
 use Testcenter\Domain\Exam\ExamID;
 use Testcenter\Domain\Exam\ExamRepository;
 use Testcenter\Domain\Exam\ExamStatus;
@@ -39,6 +40,15 @@ use Testcenter\Domain\Submission\SubmissionRepository;
 
 class SubmitExamHandlerTest extends TestCase
 {
+    private const EXAM_ID = 'b0000000-0000-0000-0000-000000000001';
+    private const Q1      = 'a0000000-0000-0000-0000-000000000001';
+    private const Q2      = 'a0000000-0000-0000-0000-000000000002';
+    private const Q3      = 'a0000000-0000-0000-0000-000000000003';
+    private const Q4      = 'a0000000-0000-0000-0000-000000000004';
+    private const Q5      = 'a0000000-0000-0000-0000-000000000005';
+    private const Q6      = 'a0000000-0000-0000-0000-000000000006';
+    private const Q7      = 'a0000000-0000-0000-0000-000000000007';
+
     private ExamRepository $examRepo;
     private QuestionRepository $questionRepo;
     private SubmissionRepository $submissionRepo;
@@ -47,10 +57,10 @@ class SubmitExamHandlerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->examRepo    = $this->createMock(ExamRepository::class);
-        $this->questionRepo  = $this->createMock(QuestionRepository::class);
+        $this->examRepo       = $this->createMock(ExamRepository::class);
+        $this->questionRepo   = $this->createMock(QuestionRepository::class);
         $this->submissionRepo = $this->createMock(SubmissionRepository::class);
-        $this->publisher     = $this->createMock(DomainEventPublisher::class);
+        $this->publisher      = $this->createMock(DomainEventPublisher::class);
 
         $this->handler = new SubmitExamHandler(
             $this->examRepo,
@@ -61,31 +71,29 @@ class SubmitExamHandlerTest extends TestCase
         );
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     private function activeExam(): Exam
     {
         return new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::ACTIVE,
             title: new Title('PHP Test'),
             description: new Description('Basic PHP knowledge test'),
+            durationMinutes: new DurationMinutes(60),
         );
     }
 
     private function inactiveExam(): Exam
     {
         return new Exam(
-            id: new ExamID(1),
+            id: new ExamID(self::EXAM_ID),
             examStatus: ExamStatus::INACTIVE,
             title: new Title('PHP Test'),
             description: new Description('Basic PHP knowledge test'),
+            durationMinutes: new DurationMinutes(60),
         );
     }
 
-    private function singleChoiceQuestion(int $id = 1, int $score = 5): SingleChoiceQuestion
+    private function singleChoiceQuestion(string $id = self::Q1, int $score = 5): SingleChoiceQuestion
     {
         return new SingleChoiceQuestion(
             id: new QuestionID($id),
@@ -96,10 +104,6 @@ class SubmitExamHandlerTest extends TestCase
         );
     }
 
-    // -------------------------------------------------------------------------
-    // Happy path
-    // -------------------------------------------------------------------------
-
     public function test_it_returns_full_score_when_answer_is_correct(): void
     {
         $this->examRepo->method('findById')->willReturn($this->activeExam());
@@ -107,7 +111,7 @@ class SubmitExamHandlerTest extends TestCase
             ->willReturn(new QuestionCollection([$this->singleChoiceQuestion(score: 5)]));
 
         $response = $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [1 => 'A'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: [self::Q1 => 'A'])
         );
 
         $this->assertEquals(5, $response->score);
@@ -120,7 +124,7 @@ class SubmitExamHandlerTest extends TestCase
             ->willReturn(new QuestionCollection([$this->singleChoiceQuestion(score: 5)]));
 
         $response = $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [1 => 'B'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: [self::Q1 => 'B'])
         );
 
         $this->assertEquals(0, $response->score);
@@ -135,7 +139,7 @@ class SubmitExamHandlerTest extends TestCase
         $this->submissionRepo->expects($this->once())->method('save');
 
         $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [1 => 'A'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: [self::Q1 => 'A'])
         );
     }
 
@@ -151,47 +155,43 @@ class SubmitExamHandlerTest extends TestCase
             ->with($this->isInstanceOf(ExamSubmitted::class));
 
         $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [1 => 'A'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: [self::Q1 => 'A'])
         );
     }
-
-    // -------------------------------------------------------------------------
-    // All question types — correct answers
-    // -------------------------------------------------------------------------
 
     public function test_it_scores_all_question_types_correctly(): void
     {
         $categories = new Categories(['Frontend', 'Backend', 'Database']);
 
         $questions = new QuestionCollection([
-            new TrueFalseQuestion(          // score: 1
-                id: new QuestionID(1),
+            new TrueFalseQuestion(
+                id: new QuestionID(self::Q1),
                 text: new QuestionText('PHP is weakly typed'),
                 score: new Score(1),
                 correct: true,
             ),
-            new SingleChoiceQuestion(       // score: 2
-                id: new QuestionID(2),
+            new SingleChoiceQuestion(
+                id: new QuestionID(self::Q2),
                 text: new QuestionText('Laravel is written in?'),
                 score: new Score(2),
                 options: new OptionCollection(['A' => 'Java', 'B' => 'PHP', 'C' => 'Go']),
                 correct: 'B',
             ),
-            new MultipleChoiceQuestion(     // score: 2
-                id: new QuestionID(3),
+            new MultipleChoiceQuestion(
+                id: new QuestionID(self::Q3),
                 text: new QuestionText('Which are PHP frameworks?'),
                 score: new Score(2),
                 options: new OptionCollection(['A' => 'Laravel', 'B' => 'Symfony', 'C' => 'Django']),
                 correct: ['A', 'B'],
             ),
-            new FillBlankQuestion(          // score: 2
-                id: new QuestionID(4),
+            new FillBlankQuestion(
+                id: new QuestionID(self::Q4),
                 text: new QuestionText('The __ pattern separates domain from infrastructure'),
                 score: new Score(2),
                 acceptedAnswers: new AcceptedAnswers(['repository', 'Repository']),
             ),
-            new MatchingQuestion(           // score: 3
-                id: new QuestionID(5),
+            new MatchingQuestion(
+                id: new QuestionID(self::Q5),
                 text: new QuestionText('Match tech to layer'),
                 score: new Score(3),
                 pairs: new MatchingPairs([
@@ -200,14 +200,14 @@ class SubmitExamHandlerTest extends TestCase
                     new MatchingPair('MySQL', 'Database'),
                 ]),
             ),
-            new OrderingQuestion(           // score: 3
-                id: new QuestionID(6),
+            new OrderingQuestion(
+                id: new QuestionID(self::Q6),
                 text: new QuestionText('Order HTTP lifecycle steps'),
                 score: new Score(3),
                 correctOrder: ['Request', 'Middleware', 'Controller', 'Response'],
             ),
-            new CategoryQuestion(           // score: 4
-                id: new QuestionID(7),
+            new CategoryQuestion(
+                id: new QuestionID(self::Q7),
                 text: new QuestionText('Classify technologies'),
                 score: new Score(4),
                 categories: $categories,
@@ -223,30 +223,26 @@ class SubmitExamHandlerTest extends TestCase
         $this->questionRepo->method('findQuestionsForExam')->willReturn($questions);
 
         $response = $this->handler->handle(new SubmitExamCommand(
-            examId: 1,
+            examId: self::EXAM_ID,
             userId: 1,
             answers: [
-                1 => true,
-                2 => 'B',
-                3 => ['A', 'B'],
-                4 => 'repository',
-                5 => ['Vue' => 'Frontend', 'Laravel' => 'Backend', 'MySQL' => 'Database'],
-                6 => ['Request', 'Middleware', 'Controller', 'Response'],
-                7 => ['Vue' => 'Frontend', 'Laravel' => 'Backend', 'MySQL' => 'Database'],
+                self::Q1 => true,
+                self::Q2 => 'B',
+                self::Q3 => ['A', 'B'],
+                self::Q4 => 'repository',
+                self::Q5 => ['Vue' => 'Frontend', 'Laravel' => 'Backend', 'MySQL' => 'Database'],
+                self::Q6 => ['Request', 'Middleware', 'Controller', 'Response'],
+                self::Q7 => ['Vue' => 'Frontend', 'Laravel' => 'Backend', 'MySQL' => 'Database'],
             ],
         ));
 
         $this->assertEquals(17, $response->score); // 1+2+2+2+3+3+4
     }
 
-    // -------------------------------------------------------------------------
-    // Partial credit — matching and category
-    // -------------------------------------------------------------------------
-
     public function test_matching_gives_partial_score_for_half_correct_pairs(): void
     {
         $question = new MatchingQuestion(
-            id: new QuestionID(1),
+            id: new QuestionID(self::Q1),
             text: new QuestionText('Match tech to layer'),
             score: new Score(4),
             pairs: new MatchingPairs([
@@ -262,14 +258,14 @@ class SubmitExamHandlerTest extends TestCase
             ->willReturn(new QuestionCollection([$question]));
 
         $response = $this->handler->handle(new SubmitExamCommand(
-            examId: 1,
+            examId: self::EXAM_ID,
             userId: 1,
             answers: [
-                1 => [
-                    'Vue'     => 'Frontend',  // correct
-                    'Laravel' => 'Backend',   // correct
-                    'MySQL'   => 'Frontend',  // wrong
-                    'Redis'   => 'Backend',   // wrong
+                self::Q1 => [
+                    'Vue'     => 'Frontend',
+                    'Laravel' => 'Backend',
+                    'MySQL'   => 'Frontend',
+                    'Redis'   => 'Backend',
                 ],
             ],
         ));
@@ -281,7 +277,7 @@ class SubmitExamHandlerTest extends TestCase
     {
         $categories = new Categories(['Frontend', 'Backend', 'Database']);
         $question = new CategoryQuestion(
-            id: new QuestionID(1),
+            id: new QuestionID(self::Q1),
             text: new QuestionText('Classify technologies'),
             score: new Score(4),
             categories: $categories,
@@ -298,24 +294,20 @@ class SubmitExamHandlerTest extends TestCase
             ->willReturn(new QuestionCollection([$question]));
 
         $response = $this->handler->handle(new SubmitExamCommand(
-            examId: 1,
+            examId: self::EXAM_ID,
             userId: 1,
             answers: [
-                1 => [
-                    'Vue'     => 'Frontend',  // correct
-                    'React'   => 'Frontend',  // correct
-                    'Laravel' => 'Database',  // wrong
-                    'MySQL'   => 'Backend',   // wrong
+                self::Q1 => [
+                    'Vue'     => 'Frontend',
+                    'React'   => 'Frontend',
+                    'Laravel' => 'Database',
+                    'MySQL'   => 'Backend',
                 ],
             ],
         ));
 
         $this->assertEquals(2, $response->score); // 2/4 * 4 = 2
     }
-
-    // -------------------------------------------------------------------------
-    // Error cases
-    // -------------------------------------------------------------------------
 
     public function test_it_throws_when_exam_is_not_found(): void
     {
@@ -326,7 +318,7 @@ class SubmitExamHandlerTest extends TestCase
         $this->expectException(ExamNotFoundException::class);
 
         $this->handler->handle(
-            new SubmitExamCommand(examId: 99, userId: 1, answers: [1 => 'A'])
+            new SubmitExamCommand(examId: 'c0000000-0000-0000-0000-000000000099', userId: 1, answers: [self::Q1 => 'A'])
         );
     }
 
@@ -339,7 +331,7 @@ class SubmitExamHandlerTest extends TestCase
         $this->expectException(ExamNotActiveException::class);
 
         $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [1 => 'A'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: [self::Q1 => 'A'])
         );
     }
 
@@ -352,7 +344,7 @@ class SubmitExamHandlerTest extends TestCase
         $this->expectException(QuestionNotFoundException::class);
 
         $this->handler->handle(
-            new SubmitExamCommand(examId: 1, userId: 1, answers: [99 => 'A'])
+            new SubmitExamCommand(examId: self::EXAM_ID, userId: 1, answers: ['c0000000-0000-0000-0000-000000000099' => 'A'])
         );
     }
 }

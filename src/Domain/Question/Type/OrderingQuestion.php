@@ -51,4 +51,12 @@ class OrderingQuestion extends Question
     {
         return new OrderingAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        return [
+            'correct_order' => $this->correctOrder,
+            '_summary'      => implode(', ', $this->correctOrder),
+        ];
+    }
 }

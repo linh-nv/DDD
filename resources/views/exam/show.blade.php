@@ -349,9 +349,9 @@
     @endphp
 
     <div class="question-card"
-         data-question-id="{{ $question->id }}"
+         data-question-id="{{ $question->uuid_str }}"
          data-type="{{ $question->type }}"
-         id="qcard-{{ $question->id }}">
+         id="qcard-{{ $question->uuid_str }}">
 
         <div class="question-meta">
             <span class="q-number">{{ $index + 1 }}</span>
@@ -365,11 +365,11 @@
         @if($question->type === 'true_false')
         <div class="options">
             <label class="option-label">
-                <input type="radio" name="q_{{ $question->id }}" value="true" onchange="markAnswered({{ $question->id }})">
+                <input type="radio" name="q_{{ $question->uuid_str }}" value="true" onchange="markAnswered('{{ $question->uuid_str }}')">
                 <span>✅ Đúng</span>
             </label>
             <label class="option-label">
-                <input type="radio" name="q_{{ $question->id }}" value="false" onchange="markAnswered({{ $question->id }})">
+                <input type="radio" name="q_{{ $question->uuid_str }}" value="false" onchange="markAnswered('{{ $question->uuid_str }}')">
                 <span>❌ Sai</span>
             </label>
         </div>
@@ -379,7 +379,7 @@
         <div class="options">
             @foreach($payload['options'] as $key => $label)
             <label class="option-label">
-                <input type="radio" name="q_{{ $question->id }}" value="{{ $key }}" onchange="markAnswered({{ $question->id }})">
+                <input type="radio" name="q_{{ $question->uuid_str }}" value="{{ $key }}" onchange="markAnswered('{{ $question->uuid_str }}')">
                 <span><strong>{{ $key }}.</strong> {{ $label }}</span>
             </label>
             @endforeach
@@ -391,7 +391,7 @@
         <div class="options">
             @foreach($payload['options'] as $key => $label)
             <label class="option-label">
-                <input type="checkbox" name="q_{{ $question->id }}[]" value="{{ $key }}" onchange="markAnswered({{ $question->id }})">
+                <input type="checkbox" name="q_{{ $question->uuid_str }}[]" value="{{ $key }}" onchange="markAnswered('{{ $question->uuid_str }}')">
                 <span><strong>{{ $key }}.</strong> {{ $label }}</span>
             </label>
             @endforeach
@@ -401,9 +401,9 @@
         @elseif($question->type === 'fill_blank')
         <input type="text"
                class="fill-input"
-               name="q_{{ $question->id }}"
+               name="q_{{ $question->uuid_str }}"
                placeholder="Nhập câu trả lời..."
-               oninput="markAnswered({{ $question->id }})">
+               oninput="markAnswered('{{ $question->uuid_str }}')">
 
         {{-- ── MATCHING ── --}}
         @elseif($question->type === 'matching')
@@ -416,8 +416,8 @@
                 <td>
                     <select class="match-select"
                             data-left="{{ $left }}"
-                            data-question="{{ $question->id }}"
-                            onchange="markAnswered({{ $question->id }})">
+                            data-question="{{ $question->uuid_str }}"
+                            onchange="markAnswered('{{ $question->uuid_str }}')">
                         <option value="">-- Chọn --</option>
                         @foreach($rightValues as $rv)
                         <option value="{{ $rv }}">{{ $rv }}</option>
@@ -431,14 +431,14 @@
         {{-- ── ORDERING ── --}}
         @elseif($question->type === 'ordering')
         <p style="font-size:.8rem;color:#64748b;margin-bottom:10px;">Kéo thả hoặc dùng nút ↑↓ để sắp xếp đúng thứ tự</p>
-        <div class="ordering-list" id="order-{{ $question->id }}" data-question="{{ $question->id }}">
+        <div class="ordering-list" id="order-{{ $question->uuid_str }}" data-question="{{ $question->uuid_str }}">
             @foreach($question->display_items as $item)
             <div class="order-item" draggable="true" data-value="{{ $item }}">
                 <span class="drag-handle">⠿</span>
                 <span class="item-label">{{ $item }}</span>
                 <div class="order-btns">
-                    <button class="order-btn" onclick="moveItem(this, -1, {{ $question->id }})" title="Lên">▲</button>
-                    <button class="order-btn" onclick="moveItem(this,  1, {{ $question->id }})" title="Xuống">▼</button>
+                    <button class="order-btn" onclick="moveItem(this, -1, '{{ $question->uuid_str }}')" title="Lên">▲</button>
+                    <button class="order-btn" onclick="moveItem(this,  1, '{{ $question->uuid_str }}')" title="Xuống">▼</button>
                 </div>
             </div>
             @endforeach
@@ -454,8 +454,8 @@
                 <td>
                     <select class="cat-select"
                             data-item="{{ $item }}"
-                            data-question="{{ $question->id }}"
-                            onchange="markAnswered({{ $question->id }})">
+                            data-question="{{ $question->uuid_str }}"
+                            onchange="markAnswered('{{ $question->uuid_str }}')">
                         <option value="">-- Chọn loại --</option>
                         @foreach($payload['categories'] as $cat)
                         <option value="{{ $cat }}">{{ $cat }}</option>
@@ -540,7 +540,7 @@ document.querySelectorAll('.ordering-list').forEach(list => {
     });
     list.addEventListener('dragend', e => {
         e.target.closest('.order-item')?.classList.remove('dragging');
-        const qid = parseInt(list.dataset.question);
+        const qid = list.dataset.question;
         markAnswered(qid);
     });
     list.addEventListener('dragover', e => {
@@ -640,7 +640,7 @@ async function submitExam() {
                 'Accept': 'application/json',
             },
             body: JSON.stringify({
-                exam_id: {{ $exam->id }},
+                exam_id: '{{ $exam->uuid_str }}',
                 answers: answers,
             }),
         });

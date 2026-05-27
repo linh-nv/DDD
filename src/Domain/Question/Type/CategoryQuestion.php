@@ -59,4 +59,18 @@ class CategoryQuestion extends Question
     {
         return new CategoryAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        $correctMap = $this->correctMap->all();
+        return [
+            'categories'  => $this->categories->all(),
+            'correct_map' => $correctMap,
+            '_summary'    => implode(', ', array_map(
+                fn($item, $cat) => "{$item}→{$cat}",
+                array_keys($correctMap),
+                array_values($correctMap)
+            )),
+        ];
+    }
 }

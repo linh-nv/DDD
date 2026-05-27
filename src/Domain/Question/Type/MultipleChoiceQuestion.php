@@ -56,4 +56,13 @@ class MultipleChoiceQuestion extends Question
     {
         return new MultipleChoiceAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        return [
+            'options'  => $this->options->options,
+            'correct'  => $this->correct,
+            '_summary' => implode(', ', $this->correct),
+        ];
+    }
 }

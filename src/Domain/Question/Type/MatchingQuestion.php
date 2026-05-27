@@ -50,4 +50,20 @@ class MatchingQuestion extends Question
     {
         return new MatchingAnswer($userAnswer);
     }
+
+    public function toPayload(): array
+    {
+        $pairs = [];
+        foreach ($this->pairs->all() as $pair) {
+            $pairs[$pair->left()] = $pair->right();
+        }
+        return [
+            'pairs'    => $pairs,
+            '_summary' => implode(', ', array_map(
+                fn($l, $r) => "{$l}→{$r}",
+                array_keys($pairs),
+                array_values($pairs)
+            )),
+        ];
+    }
 }

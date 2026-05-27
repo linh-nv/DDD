@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasBinaryUuid;
 use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model
 {
+    use HasBinaryUuid;
+
     protected $fillable = [
+        'uuid',
         'type',
         'content',
         'option_a',

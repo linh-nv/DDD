@@ -15,10 +15,16 @@ class Submission extends AggregateRoot
     private ?ScoreResult $scoreResult = null;
 
     public function __construct(
+        private readonly SubmissionID $id,
         private readonly UserID $userId,
         private readonly ExamID $examId,
         private readonly AnswerCollection $answers
     ) {
+    }
+
+    public function id(): SubmissionID
+    {
+        return $this->id;
     }
 
     public function getUserId(): UserID
@@ -49,6 +55,7 @@ class Submission extends AggregateRoot
         }
 
         $submission = new self(
+            id: SubmissionID::generate(),
             userId: $userId,
             examId: $exam->id(),
             answers: new AnswerCollection($answers)
