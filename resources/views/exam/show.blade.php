@@ -321,7 +321,16 @@
         <h1>{{ $exam->title }}</h1>
         <p>{{ $exam->description }}</p>
     </div>
-    <div class="timer" id="timer">{{ str_pad($exam->duration_minutes, 2, '0', STR_PAD_LEFT) }}:00</div>
+    <div style="display:flex;align-items:center;gap:16px;">
+        <div class="timer" id="timer">{{ str_pad($exam->duration_minutes, 2, '0', STR_PAD_LEFT) }}:00</div>
+        <div style="font-size:.8rem;opacity:.85;white-space:nowrap;">{{ auth()->user()->name }}</div>
+        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 12px;border-radius:6px;font-size:.8rem;cursor:pointer;">
+                Đăng xuất
+            </button>
+        </form>
+    </div>
 </header>
 
 <div class="container">
@@ -623,7 +632,7 @@ async function submitExam() {
     const answers = collectAnswers();
 
     try {
-        const res = await fetch('/api/exams/submit-ddd', {
+        const res = await fetch('/exams/submit-ddd', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

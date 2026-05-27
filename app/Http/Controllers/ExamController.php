@@ -6,6 +6,7 @@ use App\Models\Question;
 use App\Models\Submission;
 use App\Models\SubmissionAnswer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Testcenter\Application\Submission\UseCase\SubmitExamCommand;
 use Testcenter\Application\Submission\UseCase\SubmitExamHandler;
@@ -32,8 +33,7 @@ class ExamController
         $examId = $request->exam_id;
         $answers = $request->answers;
 
-        // giả lập auth
-        $userId = 1;
+        $userId = Auth::id();
 
         $questions = Question::whereIn(
             'id',
@@ -218,7 +218,7 @@ class ExamController
         $submissionResponse = $this->submitHandler->handle(
             new SubmitExamCommand(
                 examId: $request->exam_id,
-                userId: 1, // giả lập auth
+                userId: Auth::id(),
                 answers: $request->answers,
             )
         );
