@@ -18,8 +18,8 @@ class MultipleChoiceQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly OptionCollection $options,
-        private readonly array $correct,
+        private OptionCollection $options,
+        private array $correct,
     ) {
         if (empty($correct)) {
             throw new \InvalidArgumentException('Correct answers cannot be empty');
@@ -55,6 +55,16 @@ class MultipleChoiceQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new MultipleChoiceAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $correct = $payload['correct'] ?? [];
+        if (empty($correct)) {
+            throw new \InvalidArgumentException('Correct answers cannot be empty');
+        }
+        $this->options = new OptionCollection($payload['options'] ?? []);
+        $this->correct = $correct;
     }
 
     public function toPayload(): array

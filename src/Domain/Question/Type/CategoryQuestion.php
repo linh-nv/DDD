@@ -19,8 +19,8 @@ class CategoryQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly Categories $categories,
-        private readonly CategoryMap $correctMap,
+        private Categories $categories,
+        private CategoryMap $correctMap,
     ) {
         parent::__construct($id, QuestionType::CATEGORY, $text, $score);
     }
@@ -58,6 +58,13 @@ class CategoryQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new CategoryAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $categories = new Categories($payload['categories'] ?? []);
+        $this->categories = $categories;
+        $this->correctMap = new CategoryMap($payload['correct_map'] ?? [], $categories);
     }
 
     public function toPayload(): array

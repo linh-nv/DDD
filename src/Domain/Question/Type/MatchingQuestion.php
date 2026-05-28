@@ -2,6 +2,7 @@
 
 namespace Testcenter\Domain\Question\Type;
 
+use Testcenter\Domain\Question\Pair\MatchingPair;
 use Testcenter\Domain\Question\Pair\MatchingPairs;
 use Testcenter\Domain\Question\Question;
 use Testcenter\Domain\Question\QuestionID;
@@ -18,7 +19,7 @@ class MatchingQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly MatchingPairs $pairs,
+        private MatchingPairs $pairs,
     ) {
         parent::__construct($id, QuestionType::MATCHING, $text, $score);
     }
@@ -49,6 +50,18 @@ class MatchingQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new MatchingAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $raw = $payload['pairs'] ?? [];
+        $this->pairs = new MatchingPairs(
+            array_map(
+                fn(string $left, string $right) => new MatchingPair($left, $right),
+                array_keys($raw),
+                array_values($raw),
+            )
+        );
     }
 
     public function toPayload(): array

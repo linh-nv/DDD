@@ -17,7 +17,7 @@ class OrderingQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly array $correctOrder,
+        private array $correctOrder,
     ) {
         if (empty($correctOrder)) {
             throw new \InvalidArgumentException('Correct order cannot be empty');
@@ -50,6 +50,15 @@ class OrderingQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new OrderingAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $correctOrder = $payload['correct_order'] ?? [];
+        if (empty($correctOrder)) {
+            throw new \InvalidArgumentException('Correct order cannot be empty');
+        }
+        $this->correctOrder = $correctOrder;
     }
 
     public function toPayload(): array

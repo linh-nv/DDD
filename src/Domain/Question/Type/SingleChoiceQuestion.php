@@ -18,8 +18,8 @@ class SingleChoiceQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly OptionCollection $options,
-        private readonly string $correct,
+        private OptionCollection $options,
+        private string $correct,
     ) {
         parent::__construct($id, QuestionType::SINGLE_CHOICE, $text, $score);
     }
@@ -43,6 +43,12 @@ class SingleChoiceQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new SingleChoiceAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $this->options = new OptionCollection($payload['options'] ?? []);
+        $this->correct = $payload['correct'] ?? '';
     }
 
     public function toPayload(): array

@@ -17,7 +17,7 @@ class TrueFalseQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly bool $correct,
+        private bool $correct,
     ) {
         parent::__construct($id, QuestionType::TRUE_FALSE, $text, $score);
     }
@@ -36,6 +36,11 @@ class TrueFalseQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new TrueFalseAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $this->correct = (bool) ($payload['correct'] ?? false);
     }
 
     public function toPayload(): array

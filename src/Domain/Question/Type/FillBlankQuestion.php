@@ -18,7 +18,7 @@ class FillBlankQuestion extends Question
         QuestionID $id,
         QuestionText $text,
         Score $score,
-        private readonly AcceptedAnswers $acceptedAnswers
+        private AcceptedAnswers $acceptedAnswers
     ) {
         parent::__construct($id, QuestionType::FILL_BLANK, $text, $score);
     }
@@ -39,6 +39,11 @@ class FillBlankQuestion extends Question
     public function createAnswer(mixed $userAnswer): Answer
     {
         return new FillBlankAnswer($userAnswer);
+    }
+
+    public function updatePayload(array $payload): void
+    {
+        $this->acceptedAnswers = new AcceptedAnswers($payload['answers'] ?? []);
     }
 
     public function toPayload(): array

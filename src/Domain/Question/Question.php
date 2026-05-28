@@ -52,6 +52,7 @@ abstract class Question extends AggregateRoot
         $this->score = $score;
     }
 
+    abstract public function updatePayload(array $payload): void;
     abstract public function grade(Answer $answer): GradeResult;
     abstract public function createAnswer(mixed $userAnswer): Answer;
     abstract public function toPayload(): array;
