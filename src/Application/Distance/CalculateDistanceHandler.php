@@ -21,13 +21,7 @@ class CalculateDistanceHandler
         $point2 = new Point($command->toLat, $command->toLong);
         $calculator = $this->buildCalculator($command);
 
-        return [
-            'method' => $command->method,
-            'use_cache' => $command->useCache,
-            'use_minimum_distance' => $command->useMinimumDistance,
-            'minimum_distance' => $command->useMinimumDistance ? $command->minimumDistance : null,
-            'distance' => $calculator->getDistance($point1, $point2),
-        ];
+        return $calculator->getDistance($point1, $point2);
     }
 
     private function buildCalculator(CalculateDistanceCommand $command): DistanceCalculator

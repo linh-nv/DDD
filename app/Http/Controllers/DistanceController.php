@@ -47,7 +47,13 @@ class DistanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $result,
+            'data' => [
+                'method' => $method,
+                'use_cache' => $useCache,
+                'use_minimum_distance' => $useMinimumDistance,
+                'minimum_distance' => $useMinimumDistance ? $minimumDistance : null,
+                'distance' => $result,
+            ]
         ]);
     }
 }
