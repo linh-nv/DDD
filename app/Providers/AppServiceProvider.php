@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\ServiceProvider;
+use Testcenter\Application\Distance\CalculateDistanceCommand;
+use Testcenter\Application\Distance\CalculateDistanceHandler;
+use Testcenter\Domain\Distance\DistanceCalculatorFactory;
 use Testcenter\Domain\Exam\ExamQuestionRepository;
 use Testcenter\Domain\Exam\ExamRepository;
 use Testcenter\Domain\Question\QuestionRepository;
@@ -23,5 +27,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ExamRepository::class, MysqlExamRepository::class);
         $this->app->singleton(ExamQuestionRepository::class, MysqlExamQuestionRepository::class);
         $this->app->singleton(DomainEventPublisher::class, LaravelEventPublisher::class);
+        $this->app->singleton(DistanceCalculatorFactory::class);
+    }
+
+    public function boot(): void
+    {
+        Bus::map([
+            CalculateDistanceCommand::class => CalculateDistanceHandler::class,
+        ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminExamController;
 use App\Http\Controllers\Admin\AdminQuestionController;
+use App\Http\Controllers\DistanceController;
 
 Route::get('/', function () {
     $exams = \App\Models\Exam::where('is_active', true)
@@ -24,6 +25,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
+
+Route::get('/distance/calculate', [DistanceController::class, 'calculate'])
+    ->name('distance.calculate');
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->group(function () {
